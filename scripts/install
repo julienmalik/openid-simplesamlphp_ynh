@@ -45,7 +45,7 @@ datadir=/home/yunohost.app/openidsimplesamlphp/openidfilestore
 sudo mkdir -p $datadir
 sudo chown -R www-data: $datadir
 
-for f in $(ls $final_path_lib/metadata | grep -v saml20-idp-hosted)
+for f in $(find $final_path_lib/metadata  -maxdepth 1 -type f | grep -v saml20-idp-hosted)
 do
     sudo cp ../conf/patches/metadata/empty.php $f
 done
@@ -56,6 +56,9 @@ sudo touch $final_path_lib/modules/ldap/enable
 sudo touch $final_path_lib/modules/openidProvider/enable
 
 sudo sed -i "s@dirname(dirname(__FILE__)) @'$final_path_lib'@g" $final_path_www/_include.php
+
+sudo chown -R root:root $final_path_lib
+sudo chown -R root:root $final_path_www
 
 # Nginx config
 # cf http://www.wogri.at/en/linux/openid-provider/
