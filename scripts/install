@@ -32,7 +32,7 @@ sudo cp ../conf/patches/config/config.php $final_path_lib/config/config.php
 admin_pwd=$(tr -c -d '[A-Za-z0-9]' < /dev/urandom | dd bs=32 count=1 2>/dev/null)
 secret_salt=$(tr -c -d '[A-Za-z0-9]' < /dev/urandom | dd bs=64 count=1 2>/dev/null)
 technical_contact_email="webmaster@$domain" # TODO : check this
-sudo sed -i "s,YNH_ADMINPWD@$admin_pwd,g" $final_path_lib/config/config.php
+sudo sed -i "s,YNH_ADMINPWD,$admin_pwd,g" $final_path_lib/config/config.php
 sudo sed -i "s,YNH_SECRETSALT,$secret_salt,g" $final_path_lib/config/config.php
 sudo sed -i "s,YNH_TECHNICAL_CONTACT_EMAIL,$technical_contact_email,g" $final_path_lib/config/config.php
 
