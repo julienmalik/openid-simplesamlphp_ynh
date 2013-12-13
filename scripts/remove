@@ -1,0 +1,11 @@
+#!/bin/bash
+
+domain=$(sudo yunohost app setting openidldap domain)
+sudo rm -f /etc/nginx/conf.d/$domain.d/openidsimplesamlphp.conf
+
+sudo rm -rf /var/www/simplesamlphp
+sudo rm -rf /var/www/simplesamlphp-lib
+# do we do something with /home/yunohost.app/openidsimplesamlphp/openidfilestore ?
+
+sudo service nginx reload
+sudo yunohost app ssowatconf

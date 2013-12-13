@@ -1,0 +1,35 @@
+{
+    "name": "OpenID SimpleSAMLphp",
+    "id": "openidsimplesamlphp",
+    "description": {
+        "en": "OpenID provider based on SimpleSAMLphp",
+        "fr": "Fournisseur OpenID basé sur SimpleSAMLphp"
+    },
+    "developer": {
+        "name": "julien",
+        "email": "julien.malik@paraiso.me",
+        "url": "http://simplesamlphp.org/"
+    },
+    "multi_instance": "false",
+    "arguments": {
+        "install" : [
+            {
+                "name": "domain",
+                "ask": {
+                    "en": "Choose a domain for the OpenID provider",
+                    "fr": "Choisissez un domaine pour le fournisseur OpenID"
+                },
+                "example": "domain.org"
+            },
+            {
+                "name": "path",
+                "ask": {
+                    "en": "Choose a path for the OpenID-SimpleSAMLphp provider",
+                    "fr": "Choisissez un chemin pour le fournisseur OpenID-SimpleSAMLphp"
+                },
+                "example": "/openid",
+                "default": "/openid"
+            }
+        ]
+    }
+}

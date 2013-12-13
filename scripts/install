@@ -1,0 +1,63 @@
+#!/bin/bash -x
+
+# Retrieve arguments
+domain=$1
+path=$2
+
+# Check domain/path availability
+sudo yunohost app checkurl $domain$path -a openidldap
+if [[ ! $? -eq 0 ]]; then
+  exit 1
+fi
+
+# This path is exposed in nginx
+final_path_www=/var/www/simplesamlphp
+
+# This path is not exposed.
+# TODO: ideally this should be placed somewhere else, outside /var/www
+final_path_lib=/var/www/simplesamlphp-lib
+
+# Copy files to the right place
+sudo mkdir -p $final_path_lib
+sudo cp -ar ../sources/* $final_path_lib/
+sudo mv $final_path_lib/www $final_path_www
+
+# Apply modifications to upstream default
+# TODO: reduce exposure of ldap attributes
+sudo cp ../conf/patches/config/authsources.php $final_path_lib/config/authsources.php
+
+sudo cp ../conf/patches/config/config.php $final_path_lib/config/config.php
+admin_pwd=$(tr -c -d '[A-Za-z0-9]' < /dev/urandom | dd bs=32 count=1 2>/dev/null)
+secret_salt=$(tr -c -d '[A-Za-z0-9]' < /dev/urandom | dd bs=64 count=1 2>/dev/null)
+technical_contact_email="webmaster@$domain" # TODO : check this
+sudo sed -i "s@YNH_ADMINPWD@$admin_pwd@g" $final_path_lib/config/config.php
+sudo sed -i "s@YNH_SECRETSALT@$secret_salt@g" $final_path_lib/config/config.php
+sudo sed -i "s@YNH_TECHNICAL_CONTACT_EMAIL@$technical_contact_email@g" $final_path_lib/config/config.php
+
+# cf http://simplesamlphp.org/docs/stable/openidProvider:provider
+sudo cp ../conf/patches/config/module_openidProvider.php $final_path_lib/config/
+sudo mkdir -p /home/yunohost.app/openidsimplesamlphp/openidfilestore
+
+for f in $(ls $final_path_lib/metadata | grep -v saml20-idp-hosted)
+do
+    sudo cp ../conf/patches/metadata/empty.php $f
+done
+sudo cp ../conf/patches/metadata/saml20-idp-hosted.php $final_path_lib/metadata/saml20-idp-hosted.php
+# TODO : cert in saml20-idp-hosted.php ?
+
+sudo touch $final_path_lib/modules/ldap/enable
+sudo touch $final_path_lib/modules/openidProvider/enable
+
+sudo sed -i "s@dirname(dirname(__FILE__)) . '/lib/_autoload.php'@'$final_path_lib' . '/lib/_autoload.php'@g" $final_path_www/_include.php
+sudo sed -i "s@dirname(dirname(__FILE__)) . '/config'@'$final_path_lib' . '/config'@g" $final_path_www/_include.php
+
+# Nginx config
+# cf http://www.wogri.at/en/linux/openid-provider/
+sudo sed -i "s@YNH_LOCATION@$path@g" ../conf/nginx.conf
+sudo sed -i "s@YNH_PATH@$final_path_www@g" ../conf/nginx.conf
+sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/openidsimplesamlphp.conf
+
+# Reload Nginx and regenerate SSOwat conf
+sudo service nginx reload
+sudo yunohost app setting openidsimplesamlphp skipped_uris -v "/"
+sudo yunohost app ssowatconf
