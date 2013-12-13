@@ -29,8 +29,9 @@ sudo mv $final_path_lib/www $final_path_www
 sudo cp ../conf/patches/config/authsources.php $final_path_lib/config/authsources.php
 
 sudo cp ../conf/patches/config/config.php $final_path_lib/config/config.php
-admin_pwd=$(tr -c -d '[A-Za-z0-9]' < /dev/urandom | dd bs=32 count=1 2>/dev/null)
-secret_salt=$(tr -c -d '[A-Za-z0-9]' < /dev/urandom | dd bs=64 count=1 2>/dev/null)
+
+admin_pwd=$(dd if=/dev/urandom bs=1 count=400 2> /dev/null | tr -c -d '[A-Za-z0-9]')
+secret_salt=$(dd if=/dev/urandom bs=1 count=400 2> /dev/null | tr -c -d '[A-Za-z0-9]')
 technical_contact_email="webmaster@$domain" # TODO : check this
 sudo sed -i "s,YNH_ADMINPWD,$admin_pwd,g" $final_path_lib/config/config.php
 sudo sed -i "s,YNH_SECRETSALT,$secret_salt,g" $final_path_lib/config/config.php
