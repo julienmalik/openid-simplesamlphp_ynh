@@ -1,0 +1,32 @@
+* Create shortcut openid url
+- Currently it is too long :
+  http://mydomain.org/openid/module.php/openidProvider/user.php/myusername
+- Create handler at : http://mydomain.org/openid/username with proper <link> elements ?
+- Use redirect magic ?
+
+* HTTPS/self signed certificate
+- Verify that with a properly signed cert, the https openid url is recognized by consumers
+- Write some prosa about this in the web pages
+- Add option to install only the https site, with standard rewrite all http->https
+
+* Theming
+- see http://simplesamlphp.org/docs/stable/simplesamlphp-theming
+- hide information that are exposed via theme
+
+* Language
+- hide the list of langages, retrieve the system langage during install,
+and enable only english and this one
+
+* SREG
+- apparently, the provider does not return SREG values (name, email...) to consumer.
+- ask upstream if it is supported (I don't see any option for this)
+
+* Yunohost SSO
+- Is it possible to rely on yunohost sso as auth source, instead of ldap :
+  * if already loggued into yunohost sso, no need to type a password again
+  * if not loggued, redirect to /ynhsso to ask the password and return to openidprovider
+  * look at sources/modules/exampleauth
+
+* Deactivate as much simplesamlphp modules as possible
+- check if it is really needed to have the saml idp
+
