@@ -1,5 +1,7 @@
 #!/bin/bash -x
 
+set -e
+
 # Retrieve arguments
 domain=$1
 path=$2
@@ -30,9 +32,9 @@ sudo cp ../conf/patches/config/config.php $final_path_lib/config/config.php
 admin_pwd=$(tr -c -d '[A-Za-z0-9]' < /dev/urandom | dd bs=32 count=1 2>/dev/null)
 secret_salt=$(tr -c -d '[A-Za-z0-9]' < /dev/urandom | dd bs=64 count=1 2>/dev/null)
 technical_contact_email="webmaster@$domain" # TODO : check this
-sudo sed -i "s@YNH_ADMINPWD@$admin_pwd@g" $final_path_lib/config/config.php
-sudo sed -i "s@YNH_SECRETSALT@$secret_salt@g" $final_path_lib/config/config.php
-sudo sed -i "s@YNH_TECHNICAL_CONTACT_EMAIL@$technical_contact_email@g" $final_path_lib/config/config.php
+sudo sed -i "s,YNH_ADMINPWD@$admin_pwd,g" $final_path_lib/config/config.php
+sudo sed -i "s,YNH_SECRETSALT,$secret_salt,g" $final_path_lib/config/config.php
+sudo sed -i "s,YNH_TECHNICAL_CONTACT_EMAIL,$technical_contact_email,g" $final_path_lib/config/config.php
 
 # cf http://simplesamlphp.org/docs/stable/openidProvider:provider
 sudo cp ../conf/patches/config/module_openidProvider.php $final_path_lib/config/
@@ -48,8 +50,7 @@ sudo cp ../conf/patches/metadata/saml20-idp-hosted.php $final_path_lib/metadata/
 sudo touch $final_path_lib/modules/ldap/enable
 sudo touch $final_path_lib/modules/openidProvider/enable
 
-sudo sed -i "s@dirname(dirname(__FILE__)) . '/lib/_autoload.php'@'$final_path_lib' . '/lib/_autoload.php'@g" $final_path_www/_include.php
-sudo sed -i "s@dirname(dirname(__FILE__)) . '/config'@'$final_path_lib' . '/config'@g" $final_path_www/_include.php
+sudo sed -i "s@dirname(dirname(__FILE__)) @'$final_path_lib'@g" $final_path_www/_include.php
 
 # Nginx config
 # cf http://www.wogri.at/en/linux/openid-provider/
