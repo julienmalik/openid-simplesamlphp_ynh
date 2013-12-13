@@ -5,7 +5,7 @@ domain=$1
 path=$2
 
 # Check domain/path availability
-sudo yunohost app checkurl $domain$path -a openidldap
+sudo yunohost app checkurl $domain$path -a openidsimplesamlphp
 if [[ ! $? -eq 0 ]]; then
   exit 1
 fi
