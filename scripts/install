@@ -32,7 +32,9 @@ sudo cp ../conf/patches/config/authsources.php $final_path_lib/config/authsource
 sudo cp ../conf/patches/config/config.php $final_path_lib/config/config.php
 
 admin_pwd=$(dd if=/dev/urandom bs=1 count=400 2> /dev/null | tr -c -d '[A-Za-z0-9]')
+sudo yunohost app setting openidsimplesamlphp admin_pwd -v "$admin_pwd"
 secret_salt=$(dd if=/dev/urandom bs=1 count=400 2> /dev/null | tr -c -d '[A-Za-z0-9]')
+sudo yunohost app setting openidsimplesamlphp secret_salt -v "$secret_salt"
 technical_contact_email="webmaster@$domain"
 sudo sed -i "s,YNH_PATH,${path#?}/,g" $final_path_lib/config/config.php
 sudo sed -i "s,YNH_ADMINPWD,$admin_pwd,g" $final_path_lib/config/config.php
