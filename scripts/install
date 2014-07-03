@@ -23,6 +23,7 @@ final_path_lib=/var/www/simplesamlphp-lib
 sudo mkdir -p $final_path_lib
 sudo cp -ar ../sources/* $final_path_lib/
 sudo mv $final_path_lib/www $final_path_www
+sudo ln -s $final_path_lib/vendor/openid/php-openid/Auth $final_path_lib/lib
 
 # Apply modifications to upstream default
 # TODO: reduce exposure of ldap attributes
