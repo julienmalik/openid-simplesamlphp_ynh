@@ -12,6 +12,6 @@ $config = array(
 	'username_attribute' => 'uid',
 
 	/* The directory where OpenID data is stored. */
-	'filestore' => '/home/yunohost.app/openidsimplesamlphp/openidfilestore',
+	'filestore' => '__FINALPATH__/tmp/openidfilestore',
 
 );

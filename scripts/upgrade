@@ -1,67 +1,144 @@
-#!/bin/bash -x
+#!/bin/bash
 
-set -e
+#=================================================
+# GENERIC START
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
+
+source _common.sh
+source /usr/share/yunohost/helpers
+
+#=================================================
+# MANAGE SCRIPT FAILURE
+#=================================================
+
+# Exit if an error occurs during the execution of the script
+ynh_abort_if_errors
+
+app=$YNH_APP_INSTANCE_NAME
 
 # Retrieve arguments
-domain=$(sudo yunohost app setting openidsimplesamlphp domain)
-path=$(sudo yunohost app setting openidsimplesamlphp path)
-admin_pwd=$(sudo yunohost app setting openidsimplesamlphp admin_pwd)
-secret_salt=$(sudo yunohost app setting openidsimplesamlphp secret_salt)
+domain=$(ynh_app_setting_get "$app" domain)
+path_url=$(ynh_app_setting_get "$app" path)
+final_path=$(ynh_app_setting_get "$app" final_path)
+admin_pwd=$(ynh_app_setting_get "$app" admin_pwd)
+secret_salt=$(ynh_app_setting_get "$app" secret)
+contact_email=$(ynh_app_setting_get "$app" contact_email)
 
-# This path is exposed in nginx
-final_path_www=/var/www/simplesamlphp
+#=================================================
+# STANDARD MODIFICATIONS
+#=================================================
+# INSTALL DEPENDENCIES
+#=================================================
 
-# This path is not exposed.
-# TODO: ideally this should be placed somewhere else, outside /var/www
-final_path_lib=/var/www/simplesamlphp-lib
+ynh_install_app_dependencies php-openid
 
-# Copy files to the right place
-sudo rm -rf $final_path_lib/*
-sudo cp -ar ../sources/* $final_path_lib/
-sudo rm -rf $final_path_www
-sudo mv $final_path_lib/www $final_path_www
-sudo ln -s $final_path_lib/vendor/openid/php-openid/Auth $final_path_lib/lib
+#=================================================
+# DOWNLOAD, CHECK AND UNPACK SOURCE
+#=================================================
 
+ynh_app_setting_set "$app" final_path "$final_path"
+# Download, check integrity, uncompress and patch the source from app.src
+ynh_setup_source "$final_path" "app"
+ynh_setup_source "$final_path/modules/openidProvider" "openidprovider"
+
+test -e "$final_path/tmp" || mkdir "$final_path/tmp"
+
+#=================================================
+# NGINX CONFIGURATION
+#=================================================
+
+# Create a dedicated nginx config
+ynh_add_nginx_config
+
+#=================================================
+# CREATE DEDICATED USER
+#=================================================
+
+# Create a system user
+ynh_system_user_create "$app"
+
+#=================================================
+# PHP-FPM CONFIGURATION
+#=================================================
+
+# Create a dedicated php-fpm config
+ynh_add_fpm_config
+
+#=================================================
+# SPECIFIC SETUP
+#=================================================
+# Add a new LDAP source
+#=================================================
 # Apply modifications to upstream default
 # TODO: reduce exposure of ldap attributes
-sudo cp ../conf/patches/config/authsources.php $final_path_lib/config/authsources.php
-sudo cp ../conf/patches/config/config.php $final_path_lib/config/config.php
+cp ../conf/patches/config/authsources.php "$final_path/config/authsources.php"
 
-technical_contact_email="webmaster@$domain"
-sudo sed -i "s,YNH_PATH,${path#?}/,g" $final_path_lib/config/config.php
-sudo sed -i "s,YNH_ADMINPWD,$admin_pwd,g" $final_path_lib/config/config.php
-sudo sed -i "s,YNH_SECRETSALT,$secret_salt,g" $final_path_lib/config/config.php
-sudo sed -i "s,YNH_TECHNICAL_CONTACT_EMAIL,$technical_contact_email,g" $final_path_lib/config/config.php
+touch "$final_path/modules/ldap/enable"
+
+#=================================================
+# Add a new LDAP source
+#=================================================
 
 # cf http://simplesamlphp.org/docs/stable/openidProvider:provider
-sudo cp ../conf/patches/config/module_openidProvider.php $final_path_lib/config/
+cp ../conf/patches/config/module_openidProvider.php "$final_path/config/"
+ynh_replace_string "__FINALPATH__" "$final_path"  "$final_path/config/module_openidProvider.php"
 
-#datadir=/home/yunohost.app/openidsimplesamlphp/openidfilestore
-#sudo mkdir -p $datadir
-#sudo chown -R www-data: $datadir
+touch "$final_path/modules/openidProvider/enable"
 
-for f in $(find $final_path_lib/metadata -maxdepth 1 -type f | grep -v saml20-idp-hosted)
-do
-    sudo cp ../conf/patches/metadata/empty.php $f
-done
-sudo cp ../conf/patches/metadata/saml20-idp-hosted.php $final_path_lib/metadata/saml20-idp-hosted.php
+#=================================================
+# Create saml20-idp-hosted
+#=================================================
+
 # TODO : cert in saml20-idp-hosted.php ?
+cp ../conf/patches/metadata/saml20-idp-hosted.php "$final_path/metadata/saml20-idp-hosted.php"
 
-sudo touch $final_path_lib/modules/ldap/enable
-sudo touch $final_path_lib/modules/openidProvider/enable
+#=================================================
+# Create config file
+#=================================================
 
-sudo sed -i "s@dirname(dirname(__FILE__)) @'$final_path_lib'@g" $final_path_www/_include.php
+config=$final_path/config/config.php
 
-sudo chown -R root:root $final_path_lib
-sudo chown -R root:root $final_path_www
+cp ../conf/patches/config/config.php "$config"
 
-# Nginx config
-# cf http://www.wogri.at/en/linux/openid-provider/
-sudo sed -i "s@YNH_LOCATION@$path@g" ../conf/nginx.conf
-sudo sed -i "s@YNH_PATH@$final_path_www@g" ../conf/nginx.conf
-sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/openidsimplesamlphp.conf
+ynh_replace_string "__DOMAIN__"     "$domain"        "$config"
+ynh_replace_string "__PATH__"       "$path_url"      "$config"
+ynh_replace_string "__ADMIN_PWD__"  "$admin_pwd"     "$config"
+ynh_replace_string "__SECRET__"     "$secret_salt"   "$config"
+ynh_replace_string "__EMAIL__"      "$contact_email" "$config"
+ynh_replace_string "__FINALPATH__"  "$final_path"    "$config"
 
-# Reload Nginx and regenerate SSOwat conf
-sudo service nginx reload
-sudo yunohost app setting openidsimplesamlphp skipped_uris -v "/"
-sudo yunohost app ssowatconf
+#=================================================
+# STORE THE CHECKSUM OF THE CONFIG FILE
+#=================================================
+
+# Calculate and store the config file checksum into the app settings
+ynh_store_file_checksum "$config"
+
+#=================================================
+# Init composer
+#=================================================
+
+init_composer "root" "$final_path"
+
+#=================================================
+# GENERIC FINALIZATION
+#=================================================
+# SECURE FILES AND DIRECTORIES
+#=================================================
+
+chown -R root:root "$final_path"
+chown -R "$app":"$app" "$final_path/tmp"
+
+#=================================================
+# SETUP SSOWAT
+#=================================================
+
+ynh_app_setting_delete "$app" skipped_uris
+
+#=================================================
+# RELOAD NGINX
+#=================================================
+
+systemctl reload nginx

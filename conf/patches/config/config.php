@@ -22,7 +22,7 @@ $config = array (
 	 * external url, no matter where you come from (direct access or via the
 	 * reverse proxy).
 	 */
-	'baseurlpath'           => 'YNH_PATH',
+	'baseurlpath'           => 'https://__DOMAIN____PATH__/',
 	'certdir'               => 'cert/',
 	'loggingdir'            => 'log/',
 	'datadir'               => 'data/',
@@ -32,9 +32,8 @@ $config = array (
 	 *
 	 * SimpleSAMLphp will attempt to create this directory if it doesn't exist.
 	 */
-	'tempdir'               => '/tmp/simplesaml',
+	'tempdir'               => '__FINALPATH__/tmp/simplesamlphp',
 	
-
 	/*
 	 * If you enable this option, simpleSAMLphp will log all sent and received messages
 	 * to the log file.
@@ -69,7 +68,7 @@ $config = array (
 	 * metadata listing and diagnostics pages.
 	 * You can also put a hash here; run "bin/pwgen.php" to generate one.
 	 */
-	'auth.adminpassword'		=> 'YNH_ADMINPWD',
+	'auth.adminpassword'		=> '__ADMIN_PWD__',
 	'admin.protectindexpage'	=> false,
 	'admin.protectmetadata'		=> false,
 
@@ -81,15 +80,15 @@ $config = array (
 	 * A possible way to generate a random salt is by running the following command from a unix shell:
 	 * tr -c -d '0123456789abcdefghijklmnopqrstuvwxyz' </dev/urandom | dd bs=32 count=1 2>/dev/null;echo
 	 */
-	'secretsalt' => 'YNH_SECRETSALT',
-	
+	'secretsalt' => '__SECRET__',
+
 	/*
 	 * Some information about the technical persons running this installation.
 	 * The email address will be used as the recipient address for error reports, and
 	 * also as the technical contact in generated metadata.
 	 */
 	'technicalcontact_name'     => 'Administrator',
-	'technicalcontact_email'    => 'YNH_TECHNICAL_CONTACT_EMAIL',
+	'technicalcontact_email'    => '__EMAIL__',
 
 	/*
 	 * The timezone of the server. This option should be set to the timezone you want

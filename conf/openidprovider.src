@@ -1,0 +1,4 @@
+SOURCE_URL=https://github.com/simplesamlphp/simplesamlphp-module-openidprovider/archive/v1.0.tar.gz
+SOURCE_SUM=523660349f4c78c8ce1e31b8d11f3e2fa311b5875979f90310d4e5a480450410
+SOURCE_SUM_PRG=sha256sum
+SOURCE_FORMAT=tar.gz

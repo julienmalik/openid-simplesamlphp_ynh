@@ -1,11 +1,60 @@
 #!/bin/bash
 
-domain=$(sudo yunohost app setting openidsimplesamlphp domain)
-sudo rm -f /etc/nginx/conf.d/$domain.d/openidsimplesamlphp.conf
+#=================================================
+# GENERIC START
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
 
-sudo rm -rf /var/www/simplesamlphp
-sudo rm -rf /var/www/simplesamlphp-lib
-# do we do something with /home/yunohost.app/openidsimplesamlphp/openidfilestore ?
+source _common.sh
+source /usr/share/yunohost/helpers
 
-sudo service nginx reload
-sudo yunohost app ssowatconf
+#=================================================
+# LOAD SETTINGS
+#=================================================
+
+app=$YNH_APP_INSTANCE_NAME
+
+domain=$(ynh_app_setting_get $app domain)
+port=$(ynh_app_setting_get $app port)
+db_name=$(ynh_app_setting_get $app db_name)
+final_path=$(ynh_app_setting_get $app final_path)
+
+#=================================================
+# REMOVE DEPENDENCIES
+#=================================================
+
+# Remove metapackage and its dependencies
+ynh_remove_app_dependencies
+
+#=================================================
+# STANDARD REMOVE
+#=================================================
+# REMOVE APP MAIN DIR
+#=================================================
+
+# Remove the app directory securely
+ynh_secure_remove "$final_path"
+
+#=================================================
+# REMOVE NGINX CONFIGURATION
+#=================================================
+
+# Remove the dedicated nginx config
+ynh_remove_nginx_config
+
+#=================================================
+# REMOVE PHP-FPM CONFIGURATION
+#=================================================
+
+# Remove the dedicated php-fpm config
+ynh_remove_fpm_config
+
+#=================================================
+# GENERIC FINALIZATION
+#=================================================
+# REMOVE DEDICATED USER
+#=================================================
+
+# Delete a system user
+ynh_system_user_delete "$app"

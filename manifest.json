@@ -1,20 +1,30 @@
 {
     "name": "OpenID SimpleSAMLphp",
     "id": "openidsimplesamlphp",
+    "url": "https://github.com/simplesamlphp/simplesamlphp",
+    "license": "LGPL-2.1",
+    "packaging_format": 1,
+    "version": "1.14.17",
     "description": {
         "en": "OpenID provider based on SimpleSAMLphp",
         "fr": "Fournisseur OpenID basé sur SimpleSAMLphp"
     },
-    "developer": {
+    "maintainer": {
         "name": "julien",
-        "email": "julien.malik@paraiso.me",
-        "url": "http://simplesamlphp.org/"
+        "email": "julien.malik@paraiso.me"
     },
-    "multi_instance": "false",
+    "requirements": {
+        "yunohost": ">=2.7.0"
+	},
+    "services": [
+        "nginx"
+    ],
+    "multi_instance": false,
     "arguments": {
         "install" : [
             {
                 "name": "domain",
+                "type": "domain",
                 "ask": {
                     "en": "Choose a domain for the OpenID provider",
                     "fr": "Choisissez un domaine pour le fournisseur OpenID"
@@ -23,12 +33,13 @@
             },
             {
                 "name": "path",
+                "type": "path",
                 "ask": {
                     "en": "Choose a path for the OpenID-SimpleSAMLphp provider",
                     "fr": "Choisissez un chemin pour le fournisseur OpenID-SimpleSAMLphp"
                 },
-                "example": "/openid",
-                "default": "/openid"
+                "example": "/id",
+                "default": "/id"
             }
         ]
     }
