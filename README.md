@@ -1,11 +1,8 @@
 openid-simplesamlphp_ynh
 ========================
 
-OpenID provider based on SimpleSAMLphp library, packaged for Yunohost
+OpenID provider based on [SimpleSAMLphp](https://simplesamlphp.org) library with [openid provider module](https://github.com/simplesamlphp/simplesamlphp-module-openidprovider/), packaged for Yunohost.
 
-* "sources" subdir contains SimpleSAMLphp 1.11.0, which is distributed under LGPL
-  See http://simplesamlphp.org for details about SimpleSAMLphp
-  See "sources/COPYING for licence information
-* The rest of the repository contains Yunohost installation scripts,
-  which are released under Apache Licence, Version 2.0
-* For more info on Yunohost, see http://yunohost.org/
+* this package includes simplesamlphp 1.14.17 and do not support upgrade from version coming from [julienmalik/openid-simplesamlphp_ynh](https://github.com/julienmalik/openid-simplesamlphp_ynh), beause this was a very confidential application with too specific installation.
+* The rest of the repository contains Yunohost installation scripts, which are released under AGPL-2.0 (licence changed with full rewrite).
+* For more info on Yunohost, see https://yunohost.org/
